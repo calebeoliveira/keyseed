@@ -1,0 +1,41 @@
+#! /usr/bin/env php
+<?php
+
+if(!function_exists('readline')) {
+    function readline($message) { // Fix for HHVM
+        echo $message;
+        return rtrim(fgets(STDIN), "\n");
+    }
+}
+
+function readPass() {
+    $command = "/usr/bin/env bash -c 'read -s -p \""
+      . "\" mypassword && echo \$mypassword'";
+    $password = rtrim(shell_exec($command));
+    return $password;
+}
+
+function __keyseed($public, $secret, $plength = 15) {
+    $xorb = chr(intval($secret) xor intval($public));
+    $hash = hash('whirlpool', $public.$xorb.$secret);
+    $intv = intval(preg_replace('/[^\d]/','',$hash));
+    $hauc = preg_replace_callback('/([a-z]{2}[\d])/',
+    function($mat){return ucfirst($mat[1]);}, $hash);
+    return  substr($hauc.$hauc, $intv%128, $plength);
+}
+
+function color($string) {
+    $escape = "\033";
+    $tags = [
+        '<red>'     => $escape . '[31m',    '<blue>' => $escape . '[34m',
+        '<bgGreen>' => $escape . '[42m',    '<bold>' => $escape . '[1m',
+        '<reset>'   => $escape . '[0m',
+    ];
+    return str_replace(array_keys($tags), $tags, $string.'<reset>');
+}
+
+
+$public = readline(color("\n<blue><bold>Public: "));
+echo color("<red><bold>Secret: ");
+$secret = readPass();
+echo color("<bgGreen>".__keyseed($public, $secret)."\n\n");
