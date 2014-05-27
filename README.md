@@ -12,4 +12,4 @@ Instructions
 Usage:
 ---
 1. `keyseed`
-2. Input your private key, after, the master password.
+2. Input your public key, after, the master password.
